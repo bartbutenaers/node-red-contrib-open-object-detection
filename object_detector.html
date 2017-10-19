@@ -1,0 +1,40 @@
+<script type="text/javascript">
+    RED.nodes.registerType('object-detector',{
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            display: {value:true},
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "object.png",
+        label: function() {
+            return this.name||"object detector";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="object-detector">
+    <div class="form-row">
+        <input type="checkbox" id="node-input-display" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-display" style="width:70%;">Display on image</label>
+        <div style="margin-left: 20px" class="node-input-display-row hide">
+            <div class="form-row">
+                <label for="node-input-shape"><i class="fa fa-dot-circle-o"></i> <span>Shape</span></label>
+                <input type="text" id="node-input-shape">
+            </div>
+        </div>
+    </div> 
+    <br/>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="object-detector">
+    <p>A node to detect objects in images.</p>
+    <p></p>
+</script>
+
