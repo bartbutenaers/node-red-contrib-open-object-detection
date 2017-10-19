@@ -1,0 +1,27 @@
+{
+    "name"         : "node-red-contrib-object-detection",
+    "version"      : "0.0.1",
+    "description"  : "Node-Red node for detecting objects in images",
+    "dependencies": {
+        "jpeg-js":"0.3.3",
+        "opencv.js": "1.1.11 "
+    }, 
+    "author": {
+        "name": "Bart Butenaers"
+    },
+    "license": "Apache-2.0",
+    "keywords": [ "node-red", "opencv", "object", "detect", "image", "haar", "face", "car", "body", "eye", "nose", "mouth" ],
+    "bugs": {
+        "url": "https://github.com/bartbutenaers/node-red-contrib-object-detection/issues"
+    },
+    "homepage": "https://github.com/bartbutenaers/node-red-contrib-object-detection",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bartbutenaers/node-red-contrib-object-detection.git"
+    },
+    "node-red"     : {
+        "nodes": {
+            "object-detector": "object_detector.js"
+        }
+    }
+}
