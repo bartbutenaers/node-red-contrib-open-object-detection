@@ -8,17 +8,15 @@ module.exports = function(RED) {
         this.display = config.display;
 
         var busy = false;
-        var yuvMat = null;
-        var rgbMat = null;
-        var grayMat = null;
          
         var node = this;
         
         // Load the classifier with the frontal face model
+        // TODO make the model adjustable in the node's config screen
         var faceClassifier = new cv.CascadeClassifier();
-        faceClassifier.load('../classifiers/haarcascade_frontalface_default.xml');
-        
-        this.on("input",function(msg) {
+        var ret = faceClassifier.load('./classifiers/haarcascade_frontalface_default.xml');
+         
+        this.on("input",function(msg) {        
             var buffer = msg.payload;
             
             // Don't process multiple images simultaneously, to avoid segmentation errors
@@ -33,24 +31,23 @@ module.exports = function(RED) {
             }
             
             // Decode the JPEG compressed image to a raw image (i.e. real pixels)
+            // {
+            //  data: [<red>, <green>, <blue>, <alpha>, <red>, <green>, <blue>, <alpha> ...]
+            //  width: 400
+            //  height: 300
+            // }
             var rawImage = jpeg.decode(buffer, true);
              
             var imageHeight = rawImage.height;
             var imageWidth  = rawImage.width;
  
-            if (!yuvMat) {
-                yuvMat = new cv.Mat(imageHeight, imageWidth, cv.CV_8UC2);
-            }
+            var yuvMat = new cv.Mat(imageHeight, imageWidth, cv.CV_8UC2);
             yuvMat.data.set(rawImage);
             
-            if (!rgbMat) {
-                rgbMat = new cv.Mat(imageHeight, imageWidth, cv.CV_8UC4);
-            }
+            var rgbMat = new cv.Mat(imageHeight, imageWidth, cv.CV_8UC4);
             cv.cvtColor(yuvMat, rgbMat, cv.COLOR_YUV2RGBA_YUYV);
   
-            if (!grayMat) {
-                grayMat = new cv.Mat(imageHeight, imageWidth, cv.CV_8UC1);
-            }
+            var grayMat = new cv.Mat(imageHeight, imageWidth, cv.CV_8UC1);
             cv.cvtColor(rgbMat, grayMat, cv.COLOR_RGBA2GRAY);
  
             var faces = [];
@@ -66,8 +63,13 @@ module.exports = function(RED) {
             }
             size = faceMat.size();
  
-            // Process the raw image to find faces
-            faceClassifier.detectMultiScale(faceMat, faceVect);
+            try {
+                // Process the raw image to find faces
+                faceClassifier.detectMultiScale(faceMat, faceVect);
+            }
+            catch(err) {
+                node.error(err,msg);
+            }
  
             // Draw rectangle around faces
             for (var i = 0; i < faceVect.size(); i++) {
@@ -80,21 +82,21 @@ module.exports = function(RED) {
                 var h = face.height*yRatio;
                 var point1 = new cv.Point(x, y);
                 var point2 = new cv.Point(x + w, y + h);
-                
+                             
                 cv.rectangle(rgbMat, point1, point2, [255, 0, 0, 255]);
                 node.log('\tFace detected : ' + '[' + i + ']' + ' (' + x + ', ' + y + ', ' + w + ', ' + h + ')');
             }
+            
+            // Convert the (manipulated) rawImage back to a jpeg image
+            rawImage = { data: rgbMat.data, width: rgbMat.size().width, height: rgbMat.size().height };
+            var jpegData = jpeg.encode(rawImage, 50);
+            
+            // Send the (manipulated) rawImage on the output port
+            node.send({payload: jpegData});
  
-            // Free the memory used by vectors
+            // Free the memory
             faceMat.delete();
             faceVect.delete(); 
-        });
- 
-        this.on("close", function() {
-            rawData = { data: rgbMat.data, width: rgbMat.size().width, height: rgbMat.size().height };
-            var jpegData = jpeg.encode(rawData, 50);
-            node.send({payload: jpegData});
-    
             yuvMat.delete();
             rgbMat.delete();
             grayMat.delete();
