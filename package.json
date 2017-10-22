@@ -21,7 +21,8 @@
     },
     "node-red"     : {
         "nodes": {
-            "object-detector": "object_detector.js"
+            "object-detector": "object_detector.js",
+            "canny-edge-detector": "canny_edge_detector.js"
         }
     }
 }
